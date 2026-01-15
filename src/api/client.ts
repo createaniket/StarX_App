@@ -1,16 +1,29 @@
-import axios from 'axios';
-import Config from 'react-native-config';
+import axios from "axios";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { API_BASE_URL } from "@env";
 
 export const api = axios.create({
-baseURL: Config.API_BASE_URL,
-timeout: 10000,
+  baseURL: API_BASE_URL,
+  timeout: 30000,
 });
 
-api.interceptors.response.use(
-(res) => res,
-(err) => {
-const msg = err?.response?.data?.message || err.message;
-return Promise.reject(new Error(msg));
-}
-);
+// ✅ Attach token automatically from storage
+api.interceptors.request.use(
+  async (config) => {
+    const token = await AsyncStorage.getItem("token");
 
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+
+    if (!config.headers["Content-Type"]) {
+      config.headers["Content-Type"] = "application/json";
+    }
+
+    // ✅ optional: debug
+    console.log("API Request:", config.method?.toUpperCase(), config.url);
+
+    return config;
+  },
+  (error) => Promise.reject(error)
+);
