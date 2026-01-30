@@ -9,47 +9,51 @@ import {
   ActivityIndicator,
 } from "react-native";
 
-import { useNavigation } from "@react-navigation/native";
-
-import { loginUser } from "../api/endpoint";
+import { registerUser } from "../api/endpoint";
 import { useAuthStore } from "../store/useAuthStore";
 
-export default function LoginScreen() {
+export default function SignupScreen() {
+  const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-
-  const navigation = useNavigation(); // ✅ navigation added
+  const [phone, setPhone] = useState("");
 
   const saveLogin = useAuthStore((s) => s.login);
   const [loading, setLoading] = useState(false);
 
-  const handleLogin = async () => {
-    if (!email.trim() || !password.trim()) {
-      Alert.alert("Error", "Email & Password required");
+  const handleSignup = async () => {
+    if (!name.trim() || !email.trim() || !password.trim()) {
+      Alert.alert("Error", "Name, Email & Password required");
+      return;
+    }
+
+    if (password.length < 6) {
+      Alert.alert("Error", "Password must be at least 6 characters");
       return;
     }
 
     try {
       setLoading(true);
 
-      // ✅ Login API Call
-      const res = await loginUser(email, password);
+      // ✅ API call
+      const res = await registerUser(name, email, password, phone);
 
-      console.log("Login response:", res);
+      console.log("Signup response:", res);
 
       // expected: { token, user }
       const { token, user } = res;
 
       if (!token) {
-        Alert.alert("Login Failed", "Token not received from server");
+        Alert.alert("Signup Failed", "Token not received");
         return;
       }
 
+      // auto login after signup
       await saveLogin(token, user);
 
-      Alert.alert("Success", "Logged in successfully ✅");
+      Alert.alert("Success", "Account created successfully ✅");
     } catch (err) {
-      Alert.alert("Login Failed", err?.message || "Something went wrong");
+      Alert.alert("Signup Failed", err?.message || "Something went wrong");
     } finally {
       setLoading(false);
     }
@@ -57,7 +61,23 @@ export default function LoginScreen() {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Login</Text>
+      <Text style={styles.title}>Sign Up</Text>
+
+      {/* Name */}
+      <TextInput
+        placeholder="Name"
+        style={styles.input}
+        value={name}
+        onChangeText={setName}
+      />
+
+      {/* Phone */}
+      <TextInput
+        placeholder="Phone"
+        style={styles.input}
+        value={phone}
+        onChangeText={setPhone}
+      />
 
       {/* Email */}
       <TextInput
@@ -78,28 +98,17 @@ export default function LoginScreen() {
         onChangeText={setPassword}
       />
 
-      {/* Login Button */}
+      {/* Button */}
       <TouchableOpacity
         style={[styles.btn, loading && { opacity: 0.7 }]}
-        onPress={handleLogin}
+        onPress={handleSignup}
         disabled={loading}
       >
         {loading ? (
           <ActivityIndicator color="#fff" />
         ) : (
-          <Text style={styles.btnText}>Login</Text>
+          <Text style={styles.btnText}>Sign Up</Text>
         )}
-      </TouchableOpacity>
-
-      {/* Signup Link */}
-      <TouchableOpacity
-        onPress={() => navigation.navigate("Signup")}
-        style={styles.signupContainer}
-      >
-        <Text style={styles.signupText}>
-          Not Registered?{" "}
-          <Text style={styles.signupBold}>Sign Up</Text>
-        </Text>
       </TouchableOpacity>
     </View>
   );
@@ -137,21 +146,5 @@ const styles = StyleSheet.create({
   btnText: {
     color: "#fff",
     fontWeight: "600",
-  },
-
-  // ✅ Signup Styles
-  signupContainer: {
-    marginTop: 20,
-    alignItems: "center",
-  },
-
-  signupText: {
-    fontSize: 14,
-    color: "#333",
-  },
-
-  signupBold: {
-    fontWeight: "700",
-    color: "#000",
   },
 });

@@ -1,6 +1,8 @@
 import React, { useEffect } from "react";
-import { View, Image, ActivityIndicator, StyleSheet } from "react-native";
+import { View, Image, ActivityIndicator, StyleSheet, Dimensions } from "react-native";
 import { useNavigation } from "@react-navigation/native";
+
+const { width, height } = Dimensions.get("window");
 
 export default function SplashScreen() {
   const navigation = useNavigation<any>();
@@ -16,12 +18,12 @@ export default function SplashScreen() {
   return (
     <View style={styles.container}>
       <Image
-        source={require("../assets/splash.png")} // apni image ka path
+        source={require("../assets/splashstarx.jpeg")}
         style={styles.logo}
-        resizeMode="contain"
+        resizeMode="contain"   // 🔥 Full screen cover
       />
 
-      <ActivityIndicator size="large" color="#000" style={{ marginTop: 30 }} />
+      <ActivityIndicator size="large" color="#fff" style={styles.loader} />
     </View>
   );
 }
@@ -29,12 +31,17 @@ export default function SplashScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#fff",
-    justifyContent: "center",
-    alignItems: "center",
   },
+
   logo: {
-    width: 180,
-    height: 180,
+    width: width,
+    height: height,
+    position: "absolute", // 🔥 background banane ke liye
+  },
+
+  loader: {
+    position: "absolute",
+    bottom: 60,
+    alignSelf: "center",
   },
 });
